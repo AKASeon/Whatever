@@ -5,6 +5,8 @@
 #include <string>
 #include <thread>
 
+#include <time.h>
+
 #define THREAD_COUNT    1
 #define TEST_COUNT      100000
 
@@ -45,6 +47,8 @@ private:
 
             next.ptr = nullptr;
             next.external_count = 0;
+
+            data.store( nullptr );
         }
 
         void release_ref()
@@ -112,7 +116,7 @@ public:
         counted_node_ptr sDummy;
         node           * sDummyNode = new node;
 
-        sDummy.external_count = 0;
+        sDummy.external_count = 1;
         sDummy.ptr = sDummyNode;
 
         tail.store( sDummy );
@@ -141,7 +145,6 @@ public:
             increase_external_count( tail, old_tail );
             T* old_data = nullptr;
 
-            //std::cout << "Thread ID" << this << " " << old_tail.ptr->data << std::endl;
             if( old_tail.ptr->data.compare_exchange_strong( old_data,
                                                             new_data.get() ) )
             {
@@ -194,23 +197,23 @@ void test( int                            aThreadID,
     {
         aLockFreeQueue->push( "TEST1234567890" );
 
-        if ( ( i % 1000 ) == 0 )
-        {
-            std::cout << aThreadID << " Thread : " << i << " are pushed" << std::endl;
-        }
+        //if ( ( i % 100 ) == 0 )
+        //{
+        //    std::cout << aThreadID << " Thread : " << i << " are pushed" << std::endl;
+        //}
     }
-    std::cout << aThreadID << " Thread : " << " Push Complete" << std::endl;
+    //std::cout << aThreadID << " Thread : " << " Push Complete" << std::endl;
 
     for ( int i = 0; i < aCount; i++ )
     {
         aLockFreeQueue->pop();
 
-        if ( ( i % 1000 ) == 0 )
-        {
-            std::cout << aThreadID << " Thread : " << i << " are poped" << std::endl;
-        }
+        //if ( ( i % 100 ) == 0 )
+        //{
+        //    std::cout << aThreadID << " Thread : " << i << " are poped" << std::endl;
+        //}
     }
-    std::cout << aThreadID << " Thread : " << " Pop Complete" << std::endl;
+    //std::cout << aThreadID << " Thread : " << " Pop Complete" << std::endl;
 }
 
 
@@ -221,7 +224,11 @@ int main( int argc, char * argv[] )
         int                          sThreadCount = atoi( argv[1] );
         int                          sTestCount = atoi( argv[2] );
         lock_free_queue<std::string> sLockFreeQueue;
-        std::thread                  sThread[sThreadCount];
+        std::thread                * sThread = new std::thread[sThreadCount];
+
+        clock_t start, end;
+
+        start = clock();
 
         for ( int i = 0; i < sThreadCount; i++ )
         {
@@ -235,6 +242,10 @@ int main( int argc, char * argv[] )
         {
             sThread[i].join();
         }
+
+        end = clock();
+
+        std::cout << ( end - start ) / CLOCKS_PER_SEC << std::endl;
     }
     else
     {

@@ -7,6 +7,8 @@
 #include <mutex>
 #include <condition_variable>
 
+#include <time.h>
+
 #define THREAD_COUNT    100
 #define TEST_COUNT      100000
 
@@ -133,12 +135,21 @@ void test( int                             aThreadID,
     for ( int i = 0; i < aCount; i++ )
     {
         aThreadSafeQueue->push( "TEST1234567890" );
+
+        //if ( ( i % 1000 ) == 0 )
+        //{
+        //    std::cout << aThreadID << " Thread : " << i << " are tested" << std::endl;
+        //}
+    }
+
+    for ( int i = 0; i < aCount; i++ )
+    {
         aThreadSafeQueue->try_pop();
 
-        if ( ( i % 1000 ) == 0 )
-        {
-            std::cout << aThreadID << " Thread : " << i << " are tested" << std::endl;
-        }
+        //if ( ( i % 1000 ) == 0 )
+        //{
+        //    std::cout << aThreadID << " Thread : " << i << " are tested" << std::endl;
+        //}
     }
 }
 
@@ -149,8 +160,11 @@ int main( int argc, char * argv[] )
         int                           sThreadCount = atoi( argv[1] );
         int                           sTestCount = atoi( argv[2] );
         threadsafe_queue<std::string> sThreadSafeQueue;
-        std::thread                   sThread[sThreadCount];
+        std::thread                 * sThread = new std::thread[sThreadCount];
 
+        clock_t start, end;
+
+        start = clock();
         for ( int i = 0; i < sThreadCount; i++ )
         {
             sThread[i] = std::thread( test,
@@ -163,6 +177,9 @@ int main( int argc, char * argv[] )
         {
             sThread[i].join();
         }
+        end = clock();
+
+        std::cout << ( end - start ) / CLOCKS_PER_SEC << std::endl;
     }
 
     return 0;

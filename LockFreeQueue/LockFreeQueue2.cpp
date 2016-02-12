@@ -49,6 +49,8 @@ private:
             sDummy.external_count = 0;
 
             next.store( sDummy );
+
+            data.store( nullptr );
         }
 
         void release_ref()
@@ -66,7 +68,7 @@ private:
             if ( ( !new_counter.internal_count) &&
                  ( !new_counter.external_counters ) )
             {
-                //delete this;
+                delete this;
             }
         }
     };
@@ -106,7 +108,7 @@ private:
         if( (!new_counter.internal_count) &&
             (!new_counter.external_counters) )
         {
-            //delete ptr;
+            delete ptr;
         }
     }
     
@@ -114,8 +116,16 @@ private:
                       counted_node_ptr const &new_tail)
     {
         node* const current_tail_ptr=old_tail.ptr;
+
+        if ( new_tail.ptr == nullptr )
+        {
+            std::cout << "..." << std::endl;
+        }
+
         while(!tail.compare_exchange_weak(old_tail,new_tail) &&
+
               old_tail.ptr==current_tail_ptr);
+
         if(old_tail.ptr==current_tail_ptr)
             free_external_counter(old_tail);
         else
@@ -157,8 +167,8 @@ public:
             counted_node_ptr next=ptr->next.load();
             if(head.compare_exchange_strong(old_head,next))
             {
-                //T* const res=ptr->data.exchange(nullptr);
-                T* const res=ptr->data.load();
+                T* const res=ptr->data.exchange(nullptr);
+                //T* const res=ptr->data.load();
                 free_external_counter(old_head);
                 return std::unique_ptr<T>(res);
             }
@@ -181,12 +191,14 @@ public:
                    old_data,new_data.get()))
             {
                 counted_node_ptr old_next={0};
-                if(!old_tail.ptr->next.compare_exchange_strong(
+                if( !old_tail.ptr->next.compare_exchange_strong(
                        old_next,new_next))
                 {
-                    //delete new_next.ptr;
+                    std::cout << &new_next << std::endl;
+                    delete new_next.ptr;
                     new_next=old_next;
                 }
+
                 set_new_tail(old_tail, new_next);
                 new_data.release();
                 break;
@@ -194,12 +206,14 @@ public:
             else
             {
                 counted_node_ptr old_next={0};
-                if(old_tail.ptr->next.compare_exchange_strong(
-                       old_next,new_next))
+
+                bool sRC=  old_tail.ptr->next.compare_exchange_strong( old_next, new_next );
+                if ( sRC == true )
                 {
-                    old_next=new_next;
-                    new_next.ptr=new node;
+                    old_next = new_next;
+                    new_next.ptr = new node;
                 }
+
                 set_new_tail(old_tail, old_next);
             }
         }
@@ -215,12 +229,11 @@ void test( int                            aThreadID,
     for ( int i = 0; i < aCount; i++ )
     {
         aLockFreeQueue->push( "TEST1234567890" );
-        aLockFreeQueue->pop();
+    }
 
-        if ( ( i % 1000 ) == 0 )
-        {
-            std::cout << aThreadID << " Thread : " << i << " are tested" << std::endl;
-        }
+    for ( int i = 0; i < aCount; i++ )
+    {
+        aLockFreeQueue->pop();
     }
 }
 
@@ -232,7 +245,7 @@ int main( int argc, char * argv[] )
         int                          sThreadCount = atoi( argv[1] );
         int                          sTestCount = atoi( argv[2] );
         lock_free_queue<std::string> sLockFreeQueue;
-        std::thread                  sThread[sThreadCount];
+        std::thread                * sThread = new std::thread[sThreadCount];
 
         for ( int i = 0; i < sThreadCount; i++ )
         {
