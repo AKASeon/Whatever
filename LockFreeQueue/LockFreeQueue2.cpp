@@ -194,7 +194,6 @@ public:
                 if( !old_tail.ptr->next.compare_exchange_strong(
                        old_next,new_next))
                 {
-                    std::cout << &new_next << std::endl;
                     delete new_next.ptr;
                     new_next=old_next;
                 }
