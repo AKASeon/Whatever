@@ -1,0 +1,16 @@
+APPNAME = 'Check PEP'
+VERSION = '0.0.1'
+
+SOURCE = [ 'asymtiling.py',
+           'test.py' ]
+
+def configure( conf ):
+    print ("configure\n" )
+
+
+import waflib 
+
+def build( build ):
+    for sSource in SOURCE :
+        if build.exec_command( 'pep8 ' + sSource ) is not 0 :
+            raise waflib.Errors.WafError( "pep8 error : " + sSource )
