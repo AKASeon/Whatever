@@ -1,3 +1,10 @@
 
+" hidden file
+.*
+
 " Scala, JAVA
 *.class
+
+" waf 
+build
+
