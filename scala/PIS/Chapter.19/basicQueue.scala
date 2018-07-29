@@ -1,6 +1,6 @@
 
-class Queue[T] ( private val leading: List[T],
-                 private val trailing: List[T] )
+class Queue[+T] ( private val leading: List[T],
+                  private val trailing: List[T] )
 {
   private def mirror = 
     if ( leading.isEmpty )
@@ -31,8 +31,6 @@ class Queue[T] ( private val leading: List[T],
       for ( value <- trailing ) 
         println( value )
     }
-
-
 }
 
 val test1 = new Queue( Nil, List(1,2,3) )
@@ -58,4 +56,12 @@ println( "test4" )
 test4.showLeading
 test4.showTrailing
                    
+
+class StrangeIntQueue extends Queue[Int]
+{
+  override def enqueue( x: Int ) = {
+    println( math.sqrt( x ) )
+    super.enqueue( x )
+  }
+}
 

@@ -1,7 +1,13 @@
-trait Queue[T] {
+trait Queue[+T] {
   def head: T
   def tail: Queue[T]
   def enqueue( x: T ): Queue[T]
+}
+
+abstract class Queue[T] {
+  def head: T
+  def tail: Queue[T]
+  def enqueue( x: T ) 
 }
 
 object Queue {
@@ -36,3 +42,21 @@ val test2 = test1 enqueue 4
 
 val test3 = test2.head
 println( "test2 head:" + test3 )
+
+//def doesNotCompile( q: Queue ) { }
+
+//def doesCompile( q: Queue[AnyVal] ) { }
+
+//doesCompile( test1 )
+
+
+class StrangeIntQueue extends Queue[Int] {
+
+  override def enqueue( x: Int ) = {
+    println( math.sqrt( x ) )
+    super.enqueue( x )
+  }
+
+}
+
+

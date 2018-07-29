@@ -1,15 +1,15 @@
 
 class Queue[T] private ( private val leading: List[T],
-                         private val trailing: List[T] )
+                          private val trailing: List[T] )
 {
-  def this() = this( Nil, Nil )
-  def this( elems: T* ) = this( elems.toList, Nil )
+//  def this() = this( Nil, Nil )
+//  def this( elems: T* ) = this( elems.toList, Nil )
 
   private def mirror = 
     if ( leading.isEmpty )
     {
       println( "leading is empty" )
-      new Queue( trailing.reverse, Nil )
+      new Queue[T]( trailing.reverse, Nil )
     }
     else
       this
@@ -18,10 +18,14 @@ class Queue[T] private ( private val leading: List[T],
 
     def tail = {
       val q = mirror
-      new Queue( q.leading.tail, q.trailing )
+      new Queue[T]( q.leading.tail, q.trailing )
     }
 
-    def enqueue( x: T ) = new Queue( leading, (x :: trailing) )
+    //def enqueue[U >: T]( x: U ) = 
+    //  new Queue[U]( leading, (x :: trailing) )
+    def enqueue( x: T ) = 
+      new Queue[T]( leading, (x :: trailing) )
+
 
     def showLeading = {
       println( "showLeading" )
@@ -40,9 +44,10 @@ object Queue {
   def apply[T]( xs: T* ) = new Queue[T]( xs.toList, Nil )
 }
 
-val test1 = new Queue( 1, 2, 3 )
+val test1 = new Queue()
+val test2 = new Queue( 1, 2, 3 )
 //val test1 = new Queue( Nil, List( 1, 2, 3 ) )
-val test2 = test1 enqueue 4
+//val test2 = test1 enqueue 4
 
 println( "test1" )
 test1.showLeading
@@ -65,3 +70,12 @@ test4.showLeading
 test4.showTrailing
                    
 
+//class StrangeIntQueue extends Queue[Int] {
+//  override def enqueue( x: Int ) = {
+//    println( math.sqrt( x ) )
+//    super.enqueue( x )
+//  }
+//}
+
+val x: Queue[Any] = new StrangeIntQueue
+x.enqueue( "abc" )
